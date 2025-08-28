@@ -1,0 +1,17 @@
+# API ключі та секрети
+config/api_secrets.json
+.env
+
+# Логи та тимчасові файли
+logs/
+*.log
+data/sent_news.json
+
+# Python кеш
+__pycache__/
+*.pyc
+*.pyo
+
+# Операційна система
+.DS_Store
+Thumbs.db

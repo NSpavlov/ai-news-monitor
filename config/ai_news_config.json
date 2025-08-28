@@ -1,0 +1,72 @@
+{
+  "filter_criteria": {
+    "keywords": [
+      "новий продукт", "new product", "product launch", "запуск продукту",
+      "новий реліз", "new release", "version", "update", "оновлення",
+      "breakthrough", "прорив", "революція", "revolution", "гучна новина",
+      "приклад використання", "use case", "implementation", "впровадження",
+      "бізнес", "business", "enterprise", "корпоративний",
+      "популярний", "trending", "viral", "цікавий", "interesting"
+    ],
+    "categories": [
+      "нові продукти",
+      "нові релізи", 
+      "гучні новини",
+      "приклади використання",
+      "впровадження у бізнес",
+      "популярні та цікаві новини"
+    ]
+  },
+  "sources": {
+    "reddit": [
+      "r/artificial",
+      "r/MachineLearning", 
+      "r/OpenAI",
+      "r/ChatGPT",
+      "r/singularity"
+    ],
+    "blogs": [
+      "https://openai.com/blog/",
+      "https://blogs.microsoft.com/ai/",
+      "https://www.anthropic.com/news",
+      "https://ai.googleblog.com/",
+      "https://blog.google/technology/ai/",
+      "https://research.facebook.com/blog/",
+      "https://deepmind.com/blog",
+      "https://huggingface.co/blog",
+      "https://stability.ai/news",
+      "https://www.nvidia.com/en-us/ai-data-science/ai-insights/",
+      "https://aws.amazon.com/blogs/machine-learning/",
+      "https://azure.microsoft.com/en-us/blog/topics/artificial-intelligence/",
+      "https://www.ibm.com/blogs/research/category/artificial-intelligence/",
+      "https://www.together.ai/blog",
+      "https://cohere.com/blog",
+      "https://mistral.ai/news",
+      "https://scale.com/blog",
+      "https://www.perplexity.ai/hub/blog",
+      "https://www.pinecone.io/blog",
+      "https://www.databricks.com/blog",
+      "https://blog.langchain.com/",
+      "https://wandb.ai/site/articles",
+      "https://wandb.ai/fully-connected",
+      "https://writings.stephenwolfram.com"
+    ],
+    "news_sites": [
+      "techcrunch.com",
+      "venturebeat.com", 
+      "theverge.com",
+      "wired.com",
+      "arstechnica.com"
+    ]
+  },
+  "language": {
+    "target": "ukrainian",
+    "translate_from": "english"
+  },
+  "format_style": {
+    "use_emojis": true,
+    "bullet_points": true,
+    "include_links": true,
+    "max_length": 500
+  }
+}
