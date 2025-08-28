@@ -2,9 +2,8 @@ name: AI News Monitor
 
 on:
   schedule:
-    # Запуск кожні 2 години (UTC time)
     - cron: '0 */2 * * *'
-  workflow_dispatch: # Дозволяє ручний запуск
+  workflow_dispatch:
 
 jobs:
   monitor-news:
@@ -42,7 +41,7 @@ jobs:
         echo '${{ secrets.API_SECRETS_JSON }}' > ./config/api_secrets.json
     
     - name: Download previous sent news
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: sent-news-data
         path: ./data/
@@ -56,14 +55,14 @@ jobs:
         TZ: Europe/Kiev
     
     - name: Upload sent news data
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: sent-news-data
         path: ./data/sent_news.json
         retention-days: 90
     
     - name: Upload logs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: logs-${{ github.run_number }}
