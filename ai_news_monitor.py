@@ -316,28 +316,31 @@ class AINewsMonitor:
     def filter_news(self, news_list):
         """Фільтруємо новини за критеріями та перевіряємо унікальність"""
         logging.info("Filtering news by criteria...")
-        
         filtered = []
         keywords = self.ai_config['filter_criteria']['keywords']
-        
+        exclude_keywords = self.ai_config['filter_criteria'].get('exclude_keywords', [])
         for news in news_list:
+            # Перевірка на виключені слова
+            text_to_check = f"{news['title']} {news['content']}".lower()
+            if any(exclude_word.lower() in text_to_check for exclude_word in exclude_keywords):
+                logging.info(f"Excluded: {news['title'][:50]}...")
+                continue
+            # Пропускаємо занадто короткий контент
+            if len(news['content']) < 100:
+                continue
             # Перевіряємо чи новина вже була надіслана
             news_hash = self.get_news_hash(news['title'], news['url'])
             if news_hash in self.sent_news:
                 continue
-            
             # Перевіряємо чи працює посилання
             if not self.check_url_validity(news['url']):
                 logging.warning(f"Посилання не працює: {news['url']}")
                 continue
-            
             # Перевіряємо релевантність за ключовими словами
-            text_to_check = f"{news['title']} {news['content']}".lower()
             if any(keyword.lower() in text_to_check for keyword in keywords):
                 news['hash'] = news_hash
                 filtered.append(news)
-        
-        logging.info(f"✅ Знайдено {len(filtered)} нових релевантних новин")
+        logging.info(f"Found {len(filtered)} new relevant news")
         return filtered
     
     def translate_to_ukrainian(self, text):

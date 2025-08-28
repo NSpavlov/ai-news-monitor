@@ -8,6 +8,15 @@
       "бізнес", "business", "enterprise", "корпоративний",
       "популярний", "trending", "viral", "цікавий", "interesting"
     ],
+    "exclude_keywords": [
+      "terms and conditions",
+      "privacy policy",
+      "policy update",
+      "legal notice",
+      "не знайдено результатів",
+      "результатів не знайдено",
+      "updates to our consumer terms"
+    ],
     "categories": [
       "нові продукти",
       "нові релізи", 
