@@ -76,10 +76,17 @@ class AINewsMonitor:
         return secrets, ai_config, telegram_config
     
     def load_sent_news(self):
-        """Завантажуємо список вже надісланих новин"""
+        # Спочатку пробуємо з artifact location
         if os.path.exists(self.sent_news_file):
             with open(self.sent_news_file, 'r') as f:
                 return json.load(f)
+        
+        # Якщо немає, пробуємо з Git репозиторію  
+        git_file = './data/sent_news.json'
+        if os.path.exists(git_file):
+            with open(git_file, 'r') as f:
+                return json.load(f)
+        
         return []
     
     def save_sent_news(self):
