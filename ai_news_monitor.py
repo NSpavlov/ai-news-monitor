@@ -308,33 +308,53 @@ class AINewsMonitor:
         return all_news
     
     def filter_news(self, news_list):
-        """Фільтруємо новини за критеріями та перевіряємо унікальність"""
-        logging.info("Filtering news by criteria...")
+        logging.info(f"=== FILTERING STARTED ===")
+        logging.info(f"Previously sent news count: {len(self.sent_news)}")
+        logging.info(f"Input news count: {len(news_list)}")
+        
         filtered = []
         keywords = self.ai_config['filter_criteria']['keywords']
         exclude_keywords = self.ai_config['filter_criteria'].get('exclude_keywords', [])
-        for news in news_list:
-            # Перевірка на виключені слова
-            text_to_check = f"{news['title']} {news['content']}".lower()
-            if any(exclude_word.lower() in text_to_check for exclude_word in exclude_keywords):
-                logging.info(f"Excluded: {news['title'][:50]}...")
-                continue
-            # Пропускаємо занадто короткий контент
-            if len(news['content']) < 100:
-                continue
-            # Перевіряємо чи новина вже була надіслана
+        
+        for i, news in enumerate(news_list):
+            logging.info(f"\n--- Processing news {i+1}/{len(news_list)} ---")
+            logging.info(f"Title: {news['title'][:50]}...")
+            
+            # Генеруємо хеш
             news_hash = self.get_news_hash(news['title'], news['url'])
+            logging.info(f"Hash: {news_hash}")
+            
+            # Перевірка дублікатів
             if news_hash in self.sent_news:
+                logging.info("❌ DUPLICATE - already sent, skipping")
                 continue
-            # Перевіряємо чи працює посилання
+            else:
+                logging.info("✅ NEW - not in sent list")
+            
+            # Решта фільтрів
+            text_to_check = f"{news['title']} {news['content']}".lower()
+            
+            if any(exclude_word.lower() in text_to_check for exclude_word in exclude_keywords):
+                logging.info("❌ EXCLUDED by keywords")
+                continue
+                
+            if len(news['content']) < 100:
+                logging.info("❌ TOO SHORT")
+                continue
+                
             if not self.check_url_validity(news['url']):
-                logging.warning(f"Посилання не працює: {news['url']}")
+                logging.info("❌ URL NOT WORKING")
                 continue
-            # Перевіряємо релевантність за ключовими словами
+                
             if any(keyword.lower() in text_to_check for keyword in keywords):
+                logging.info("✅ PASSED all filters - will send")
                 news['hash'] = news_hash
                 filtered.append(news)
-        logging.info(f"Found {len(filtered)} new relevant news")
+            else:
+                logging.info("❌ NO MATCHING keywords")
+        
+        logging.info(f"=== FILTERING COMPLETE ===")
+        logging.info(f"Will send {len(filtered)} news items")
         return filtered
     
     def translate_to_ukrainian(self, text):
@@ -421,51 +441,46 @@ class AINewsMonitor:
         return filename
     
     def run_once(self):
-        """Виконуємо один цикл пошуку та надсилання новин"""
-        logging.info("Starting AI News Monitor...")
+        logging.info("=== AI NEWS MONITOR STARTED ===")
+        logging.info(f"Loaded {len(self.sent_news)} previously sent news hashes")
         
         try:
-            # Запускаємо асинхронний пошук
             news_list = asyncio.run(self.search_ai_news_async())
             if not news_list:
                 logging.info("No news found")
                 return
-            
-            # Фільтруємо
+                
             filtered_news = self.filter_news(news_list)
             
             if not filtered_news:
                 logging.info("No new relevant news found")
                 return
             
-            # Обробляємо кожну новину (максимум 3 за раз)
             sent_count = 0
-            for news in filtered_news[:3]:
+            for i, news in enumerate(filtered_news[:3]):
+                logging.info(f"\n=== SENDING NEWS {i+1} ===")
+                logging.info(f"Hash: {news['hash']}")
+                
                 try:
-                    # Форматуємо повідомлення
                     message = self.format_news_message(news)
-                    
-                    # Зберігаємо у файл
                     filename = self.save_news_to_file(message, news)
-                    logging.info(f"Message saved: {filename}")
                     
-                    # Надсилаємо у Telegram
                     if self.send_to_telegram(message):
-                        # Додаємо до списку надісланих
+                        logging.info(f"✅ Successfully sent news with hash {news['hash']}")
                         self.sent_news.append(news['hash'])
                         sent_count += 1
-                        
-                        # Пауза між повідомленнями
                         time.sleep(self.telegram_config['rate_limits']['delay_between_messages'])
-                    
+                    else:
+                        logging.error(f"❌ Failed to send news with hash {news['hash']}")
+                        
                 except Exception as e:
                     logging.error(f"Error processing news: {e}")
-                    continue
             
-            # Зберігаємо список надісланих новин
+            # Зберігаємо оновлений список
+            logging.info(f"Saving {len(self.sent_news)} total sent news hashes")
             self.save_sent_news()
             
-            logging.info(f"Successfully sent {sent_count} news items")
+            logging.info(f"=== MONITOR COMPLETE: sent {sent_count} news ===")
             
         except Exception as e:
             logging.error(f"Critical error: {e}")
