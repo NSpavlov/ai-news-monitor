@@ -46,6 +46,15 @@ jobs:
         name: sent-news-data
         path: ./data/
       continue-on-error: true
+
+    - name: Check if sent_news.json exists
+      run: |
+        if [ -f ./data/sent_news.json ]; then
+          echo "✅ Found previous sent news: $(cat ./data/sent_news.json | wc -l) items"
+          cat ./data/sent_news.json
+        else
+          echo "❌ No previous sent news found, starting fresh"
+        fi
     
     - name: Run AI News Monitor
       run: |
