@@ -40,6 +40,11 @@ class AINewsMonitor:
         
     def load_config(self):
         """Завантажуємо всі конфігурації"""
+        # Створюємо директорії якщо вони не існують
+        os.makedirs('./data', exist_ok=True)
+        os.makedirs('./logs', exist_ok=True)
+        os.makedirs('./config', exist_ok=True)
+        
         # Завантажуємо секрети
         if os.path.exists('./config/api_secrets.json'):
             secrets_path = './config/api_secrets.json'
@@ -76,17 +81,29 @@ class AINewsMonitor:
         return secrets, ai_config, telegram_config
     
     def load_sent_news(self):
-        # Спочатку пробуємо з artifact location
-        if os.path.exists(self.sent_news_file):
-            with open(self.sent_news_file, 'r') as f:
-                return json.load(f)
+        logging.info("=== LOADING SENT NEWS ===")
         
-        # Якщо немає, пробуємо з Git репозиторію  
-        git_file = './data/sent_news.json'
-        if os.path.exists(git_file):
-            with open(git_file, 'r') as f:
-                return json.load(f)
+        # Список можливих локацій файлу
+        locations = [
+            './data/sent_news.json',  # Artifact location
+            './data/sent_news.json',  # Git location (той самий)
+            'data/sent_news.json',    # Альтернативний шлях
+        ]
         
+        for location in locations:
+            if os.path.exists(location):
+                logging.info(f"Found sent news file at: {location}")
+                try:
+                    with open(location, 'r') as f:
+                        data = json.load(f)
+                        logging.info(f"Successfully loaded {len(data)} sent news hashes")
+                        return data
+                except Exception as e:
+                    logging.error(f"Error reading {location}: {e}")
+            else:
+                logging.info(f"No file at: {location}")
+        
+        logging.info("No sent news found - starting with empty list")
         return []
     
     def save_sent_news(self):

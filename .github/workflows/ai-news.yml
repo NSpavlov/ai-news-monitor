@@ -55,6 +55,19 @@ jobs:
         else
           echo "❌ No previous sent news found, starting fresh"
         fi
+
+    - name: Verify sent_news.json
+      run: |
+        echo "Current directory contents:"
+        ls -la
+        echo "Data directory contents:"
+        ls -la ./data/ || echo "No data directory"
+        if [ -f ./data/sent_news.json ]; then
+          echo "sent_news.json content:"
+          cat ./data/sent_news.json
+        else
+          echo "sent_news.json not found"
+        fi
     
     - name: Run AI News Monitor
       run: |
