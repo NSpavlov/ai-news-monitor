@@ -332,9 +332,10 @@ class AINewsMonitor:
         return all_news
     
     def filter_news(self, news_list):
-        logging.info(f"=== FILTERING STARTED ===")
-        logging.info(f"Previously sent news count: {len(self.sent_news)}")
-        logging.info(f"Input news count: {len(news_list)}")
+        # Жорстко заблокувати проблемну новину
+        BLOCKED_HASHES = [
+            "d111de5e8f40ffc15ad19821fc73c27d"  # What is LLMOps
+        ]
         
         filtered = []
         keywords = self.ai_config['filter_criteria']['keywords']
@@ -354,6 +355,13 @@ class AINewsMonitor:
                 continue
             else:
                 logging.info("✅ NEW - not in sent list")
+            
+            # Перевірка на блокування
+            if news_hash in BLOCKED_HASHES:
+                logging.info(f"PERMANENTLY BLOCKED: {news['title'][:50]}")
+                continue
+            else:
+                logging.info("✅ NOT BLOCKED")
             
             # Решта фільтрів
             text_to_check = f"{news['title']} {news['content']}".lower()
