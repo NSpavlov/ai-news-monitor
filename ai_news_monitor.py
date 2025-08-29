@@ -40,45 +40,39 @@ class AINewsMonitor:
         
     def load_config(self):
         """Завантажуємо всі конфігурації"""
-        # Шляхи для API ключів
+        # Завантажуємо секрети
         if os.path.exists('./config/api_secrets.json'):
             secrets_path = './config/api_secrets.json'
         elif os.path.exists('../.api_secret_infos/api_secrets.json'):
             secrets_path = '../.api_secret_infos/api_secrets.json'
         else:
             raise FileNotFoundError("API secrets file not found")
-        # Шляхи для конфігурацій - перевіряємо різні локації
-        config_locations = [
-            './telegram_config.json',
-            './config/telegram_config.json',
-            '../telegram_config.json'
-        ]
-        telegram_config_path = None
-        for path in config_locations:
-            if os.path.exists(path):
-                telegram_config_path = path
-                break
-        ai_config_locations = [
-            './ai_news_config.json',
-            './config/ai_news_config.json',
-            '../ai_news_config.json'
-        ]
-        ai_config_path = None
-        for path in ai_config_locations:
-            if os.path.exists(path):
-                ai_config_path = path
-                break
-        if not telegram_config_path:
-            raise FileNotFoundError("telegram_config.json not found")
-        if not ai_config_path:
-            raise FileNotFoundError("ai_news_config.json not found")
-        # Завантажуємо файли
         with open(secrets_path, 'r', encoding='utf-8') as f:
             secrets = json.load(f)
+        # AI конфігурація - завжди має бути
+        ai_config_path = './config/ai_news_config.json'
+        if not os.path.exists(ai_config_path):
+            raise FileNotFoundError("ai_news_config.json not found in ./config/")
         with open(ai_config_path, 'r', encoding='utf-8') as f:
             ai_config = json.load(f)
-        with open(telegram_config_path, 'r', encoding='utf-8') as f:
-            telegram_config = json.load(f)
+        # Telegram конфігурація - створюємо з секретів
+        telegram_config = {
+            "bot_token": secrets['TELEGRAM']['secrets']['BOT_TOKEN'],
+            "target_group": {
+                "username": "@novyni_hi",
+                "chat_id": "@novyni_hi",
+                "name": "Новини HI"
+            },
+            "message_settings": {
+                "parse_mode": "Markdown",
+                "disable_web_page_preview": False,
+                "disable_notification": False
+            },
+            "rate_limits": {
+                "messages_per_minute": 20,
+                "delay_between_messages": 3
+            }
+        }
         return secrets, ai_config, telegram_config
     
     def load_sent_news(self):
