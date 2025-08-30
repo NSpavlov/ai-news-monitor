@@ -35,54 +35,37 @@ jobs:
     - name: Create directories
       run: |
         mkdir -p ./config ./data ./logs
-    
+
     - name: Create API secrets file
       run: |
         echo '${{ secrets.API_SECRETS_JSON }}' > ./config/api_secrets.json
-    
-    - name: Download previous sent news
-      uses: actions/download-artifact@v4
-      with:
-        name: sent-news-data
-        path: ./data/
-      continue-on-error: true
 
-    - name: Check if sent_news.json exists
+    - name: Ensure sent_news.json exists
       run: |
-        if [ -f ./data/sent_news.json ]; then
-          echo "✅ Found previous sent news: $(cat ./data/sent_news.json | wc -l) items"
-          cat ./data/sent_news.json
-        else
-          echo "❌ No previous sent news found, starting fresh"
+        mkdir -p ./data
+        if [ ! -f ./data/sent_news.json ]; then
+          echo "Creating initial sent_news.json"
+          echo '[]' > ./data/sent_news.json
         fi
+        echo "File contents:"
+        cat ./data/sent_news.json
 
-    - name: Verify sent_news.json
-      run: |
-        echo "Current directory contents:"
-        ls -la
-        echo "Data directory contents:"
-        ls -la ./data/ || echo "No data directory"
-        if [ -f ./data/sent_news.json ]; then
-          echo "sent_news.json content:"
-          cat ./data/sent_news.json
-        else
-          echo "sent_news.json not found"
-        fi
-    
     - name: Run AI News Monitor
       run: |
         python ai_news_monitor.py
-      env:
-        PYTHONIOENCODING: utf-8
-        TZ: Europe/Kiev
-    
+        # Ensure file exists after script runs
+        if [ ! -f ./data/sent_news.json ]; then
+          echo '[]' > ./data/sent_news.json
+        fi
+
     - name: Upload sent news data
       uses: actions/upload-artifact@v4
       with:
         name: sent-news-data
         path: ./data/sent_news.json
-        retention-days: 90
-    
+        if-no-files-found: warn
+        overwrite: true
+
     - name: Upload logs
       uses: actions/upload-artifact@v4
       if: always()
